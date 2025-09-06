@@ -1,0 +1,36 @@
+{
+    "core_paths": {
+        "reports_dir": "test_reports",
+        "history_cache_dir": "history_cache"
+    },
+    "report_settings": {
+        "report_base_name": "test_report"
+    },
+    "trading_settings": {
+        "symbols_to_test": [
+            "EURUSD",
+            "XAUUSD",
+            "GBPUSD",
+            "USDJPY",
+            "AUDUSD",
+            "USDCAD",
+            "USDCHF",
+            "NZDUSD"
+        ]
+    },
+    "stress_test_settings": {
+        "iterations": 5
+    },
+    "history_test_params": {
+        "by_count": {
+            "symbol": "EURUSD",
+            "timeframe": "M1",
+            "count": 100
+        },
+        "by_time": {
+            "symbol": "EURUSD",
+            "timeframe": "H1",
+            "days_ago": 5
+        }
+    }
+}

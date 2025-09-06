@@ -1,0 +1,12 @@
+{
+    "HandshakePort": 5555,
+    "CmdPort": 5556,
+    "PubPort": 5557,
+    "AuthKey": "MT5RemoteBridgeAPI", 
+    "ServerPublicKey": "F[PeC?g-7K11rg1]Z/Gjy{c-@KCNQ>i@F=cQUIWL",
+    "ServerSecretKey": "f6+Hh<q(P]R$7W>/^#4E73H>zT9qm[S-1t!2CmA.",
+    "MagicNumber": 123456,
+    "Slippage": 10,
+    "TimerMs": 5,
+    "HeartbeatSec": 5
+}

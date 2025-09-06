@@ -1,0 +1,6 @@
+{
+  "server_ip": "127.0.0.1",
+  "handshake_port": 5555,
+  "auth_key": "MT5RemoteBridgeAPI",
+  "request_timeout": 5000
+}
