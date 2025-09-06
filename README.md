@@ -1,6 +1,5 @@
+---
 
-
-```markdown
 # MT5RemoteBridgeAPI - High-Performance, Military-Grade Encrypted MT5 Trading Bridge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,38 +10,38 @@ This project is maintained by **ding9736** and is licensed under the **MIT Licen
 
 ## Core Features ✨
 
-*   🛡️ **Military-Grade Security (ZAP & Curve25519)**: This is the core highlight of the framework. It implements the **ZeroMQ Authentication Protocol (ZAP)** to dynamically establish point-to-point encrypted sessions for each client. All communication is encrypted using the industry-leading **Curve25519** algorithm, fundamentally preventing man-in-the-middle attacks and data snooping, ensuring the absolute confidentiality and integrity of your trading commands and strategy information.
+- 🛡️ **Military-Grade Security (ZAP & Curve25519)**: This is the core highlight of the framework. It implements the **ZeroMQ Authentication Protocol (ZAP)** to dynamically establish point-to-point encrypted sessions for each client. All communication is encrypted using the industry-leading **Curve25519** algorithm, fundamentally preventing man-in-the-middle attacks and data snooping, ensuring the absolute confidentiality and integrity of your trading commands and strategy information.
 
-*   ⚡ **Extreme Performance**: Based on ZeroMQ's (ZMQ) asynchronous messaging model, it achieves microsecond-level low latency and high throughput. It can handle high-frequency tick data and intensive trading orders with ease.
+- ⚡ **Extreme Performance**: Based on ZeroMQ's (ZMQ) asynchronous messaging model, it achieves microsecond-level low latency and high throughput. It can handle high-frequency tick data and intensive trading orders with ease.
 
-*   🔗 **Powerful API Design**: Provides clear Request/Reply (REQ/REP) and Publish/Subscribe (PUB/SUB) patterns. The API covers dozens of interfaces for accounts, market data, trades, orders, and historical data. It is feature-complete, highly decoupled, and easy to integrate into any language.
+- 🔗 **Powerful API Design**: Provides clear Request/Reply (REQ/REP) and Publish/Subscribe (PUB/SUB) patterns. The API covers dozens of interfaces for accounts, market data, trades, orders, and historical data. It is feature-complete, highly decoupled, and easy to integrate into any language.
 
-*   📈 **Production-Grade Stability**: Includes a detailed tiered logging system, heartbeat keep-alive mechanism, connection status monitoring, and robust error handling. Designed for 24/7 uninterrupted operation in a production environment.
+- 📈 **Production-Grade Stability**: Includes a detailed tiered logging system, heartbeat keep-alive mechanism, connection status monitoring, and robust error handling. Designed for 24/7 uninterrupted operation in a production environment.
 
-*   🔧 **Highly Flexible Configuration**: Core server parameters (ports, keys, trading defaults, etc.) can be configured via an external JSON file, with support for hot-reloading of some parameters without restarting the service.
+- 🔧 **Highly Flexible Configuration**: Core server parameters (ports, keys, trading defaults, etc.) can be configured via an external JSON file, with support for hot-reloading of some parameters without restarting the service.
 
-*   🐍 **Comprehensive Python Client & Test Suite**: The project includes a full-featured Python client `mt5_bridge_client` as the official reference implementation. It also provides a complete test suite with unit tests, trading logic tests, concurrency stress tests, and performance benchmarks, ready to use out-of-the-box.
+- 🐍 **Comprehensive Python Client & Test Suite**: The project includes a full-featured Python client `mt5_bridge_client` as the official reference implementation. It also provides a complete test suite with unit tests, trading logic tests, concurrency stress tests, and performance benchmarks, ready to use out-of-the-box.
 
 ## Prerequisites
 
 #### Server-Side
 
-*   OS: Windows
-*   Trading Platform: MetaTrader 5 Client (Build 1860 or newer)
+- OS: Windows
+- Trading Platform: MetaTrader 5 Client (Build 1860 or newer)
 
 #### Client-Side (Python Test Environment)
 
-*   Python 3.7 or higher
-*   Required Python libraries. You can install them with a single command:
+- Python 3.7 or higher
+- Required Python libraries. You can install them with a single command:
 
 ```shell
 pip install pyzmq pynacl pandas rich
 ```
 
-* `pyzmq`: Python bindings for ZeroMQ, handles core communication.
-* `pynacl`: Python bindings for the `libsodium` encryption library, responsible for Curve25519 encryption.
-* `pandas`: Used for convenient handling and display of tabular data (like historical OHLC, positions list).
-* `rich`: Used to create beautiful and readable test report outputs in the terminal.
+- `pyzmq`: Python bindings for ZeroMQ, handles core communication.
+- `pynacl`: Python bindings for the `libsodium` encryption library, responsible for Curve25519 encryption.
+- `pandas`: Used for convenient handling and display of tabular data (like historical OHLC, positions list).
+- `rich`: Used to create beautiful and readable test report outputs in the terminal.
 
 ## Deployment and Startup Guide 🚀
 
@@ -56,12 +55,10 @@ Copy the `MQL5` folder from this project's repository and overwrite the `MQL5` f
 
 Navigate to the `MQL5\Files\MT5RemoteBridgeAPI_Services_config\` path within your MT5 data directory. You will find the `generate_MT5RemoteBridgeAPI_keys.py` script.
 
-Run it from the command line:
-
-```shell
+Run it from the command line:```shell
 python generate_MT5RemoteBridgeAPI_keys.py
-```
 
+```
 This script will generate and print your unique **ServerPublicKey** and **ServerSecretKey**. Copy them, as you will need them for the next step.
 
 ### Step 3: Configure the Server
@@ -69,7 +66,6 @@ This script will generate and print your unique **ServerPublicKey** and **Server
 In the same directory (`MQL5\Files\MT5RemoteBridgeAPI_Services_config\`), open the `MT5RemoteBridgeAPI_Services_config.json` configuration file with a text editor.
 
 Complete the configuration based on the comments and your requirements:
-
 ```json
 {
   "HandshakePort": 5555,          // Handshake port (plaintext, used for key exchange)
@@ -127,9 +123,8 @@ The script will automatically execute a series of tests covering all core API fu
 
 ## Developer
 
-* **ding9736**
+- **ding9736**
 
 ## License
 
 This project is released under the [MIT License](https://opensource.org/licenses/MIT).
-```
