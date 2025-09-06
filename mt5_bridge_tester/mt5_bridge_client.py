@@ -14,6 +14,8 @@ import pandas as pd
 # ==============================================================================
 CONFIG_DIR = "config"
 CONFIG_FILE_NAME = "MT5RemoteBridgeAPI_client_config.json"
+# [New] TOFU trust cache filename
+TRUST_CACHE_FILENAME = "server_trust_cache.json"
 # ==============================================================================
 
 
@@ -21,6 +23,8 @@ class APIClient:
     """
     A core client for secure, thread-safe communication with the MT5RemoteBridgeAPI server.
     It handles the entire process of handshake, encryption, command sending, and data subscription.
+    [V2.1 Update] Implements Trust On First Use (TOFU) for enhanced security against MITM attacks.
+    Trust cache file location moved to CONFIG_DIR for persistence.
     """
 
     def __init__(self, history_cache_dir="history_cache"):
@@ -38,10 +42,14 @@ class APIClient:
         self.server_public_key = None
         self.cmd_endpoint = None
 
-        # Added cache directory attribute
+        # Cache directory attribute for historical data
         self.history_cache_dir = history_cache_dir
         if not os.path.exists(self.history_cache_dir):
             os.makedirs(self.history_cache_dir)
+            logging.info(f"History cache directory created: {self.history_cache_dir}")
+
+        # [New V2.1] Define path for the TOFU trust cache file in the config directory.
+        self.trust_cache_file = os.path.join(CONFIG_DIR, TRUST_CACHE_FILENAME)
 
         logging.info("Generating new temporary key pair for this session...")
         self.client_public_key, self.client_secret_key = zmq.curve_keypair()
@@ -109,12 +117,15 @@ class APIClient:
         if response.get("status") != "success":
             raise ConnectionError(f"Handshake failed: {response.get('message')}")
 
-        logging.info(
-            "Handshake successful, client is authorized and has received server session info."
-        )
+        # --- TOFU (Trust On First Use) Security Implementation ---
         server_data = response["data"]
+        self._verify_server_identity(server_data)
+        # --- End of TOFU Implementation ---
 
-        self.server_public_key = server_data["server_public_key"].encode("utf-8")
+        logging.info(
+            "Handshake successful and server identity verified. Proceeding to establish secure communication channels."
+        )
+
         cmd_port = server_data["encrypted_cmd_port"]
         pub_port = server_data["encrypted_pub_port"]
         self.cmd_endpoint = f"tcp://{self.config['server_ip']}:{cmd_port}"
@@ -129,6 +140,82 @@ class APIClient:
         logging.info("Background data listener thread has started.")
         time.sleep(0.5)
         logging.info("Connection process complete, client is ready.")
+
+    def _verify_server_identity(self, server_data: dict):
+        """
+        Implements Trust On First Use (TOFU) verification.
+        On first connection, caches the server's public key in the config directory.
+        On subsequent connections, verifies the received public key against the cached version.
+
+        :param server_data: The data dictionary received from the handshake response.
+        :raises ConnectionError: If server identity verification fails due to key mismatch.
+        """
+        received_key = server_data.get("server_public_key")
+        if not received_key:
+            raise ConnectionError(
+                "Handshake response did not contain 'server_public_key'."
+            )
+
+        trusted_key = None
+        if os.path.exists(self.trust_cache_file):
+            try:
+                with open(self.trust_cache_file, "r") as f:
+                    cache_data = json.load(f)
+                    trusted_key = cache_data.get("server_public_key")
+            except Exception as e:
+                logging.warning(
+                    f"Failed to read trust cache file '{self.trust_cache_file}': {e}. "
+                    "Will proceed assuming first connection."
+                )
+
+        if trusted_key:
+            # Subsequent connection: Verify key integrity
+            if received_key == trusted_key:
+                logging.info("Server identity verified successfully using TOFU cache.")
+                self.server_public_key = received_key.encode("utf-8")
+            else:
+                # Security Critical Failure!
+                logging.critical("=" * 80)
+                logging.critical(
+                    "!!! CRITICAL SECURITY ALERT: SERVER IDENTITY MISMATCH !!!"
+                )
+                logging.critical(
+                    f"  The public key received from '{self.config['server_ip']}' does not match the cached trusted key."
+                )
+                logging.critical(f"  Cached Key: {trusted_key}")
+                logging.critical(f"  Received Key: {received_key}")
+                logging.critical(
+                    "  This may indicate a Man-in-the-Middle (MITM) attack."
+                )
+                logging.critical(
+                    f"  To resolve, manually verify server integrity and delete '{self.trust_cache_file}' to establish new trust."
+                )
+                logging.critical("=" * 80)
+                raise ConnectionError(
+                    "Server identity verification failed (MITM attack suspected). Connection aborted."
+                )
+        else:
+            # First connection or corrupted cache: Trust and save key
+            logging.warning(
+                f"No existing trust cache found or cache unreadable. Trusting server public key on first use (TOFU)."
+            )
+            self.server_public_key = received_key.encode("utf-8")
+            try:
+                # Save key along with metadata for future reference
+                trust_data = {
+                    "server_public_key": received_key,
+                    "first_seen_timestamp": datetime.now().isoformat(),
+                    "server_ip_at_trust": self.config["server_ip"],
+                }
+                with open(self.trust_cache_file, "w") as f:
+                    json.dump(trust_data, f, indent=4)
+                logging.info(
+                    f"Server public key cached successfully to: {self.trust_cache_file}"
+                )
+            except Exception as e:
+                logging.error(
+                    f"Failed to write trust cache file '{self.trust_cache_file}': {e}"
+                )
 
     def _connect_req_socket(self):
         """Internal method to connect or reconnect the REQ socket"""
@@ -293,13 +380,11 @@ class APIClient:
             if not df.empty:
                 df["time"] = pd.to_datetime(df["time"], unit="s")
                 df.set_index("time", inplace=True)
-                df.sort_index(inplace=True)  # Ensure time is in ascending order
+                df.sort_index(inplace=True)  # Ensure time in ascending order
                 try:
                     df.to_parquet(cache_path)
                     logging.info(f"Historical data cached to: {cache_path}")
                 except Exception as e:
-                    # **[Optimization]** Changed log level from ERROR to WARNING.
-                    # A cache failure should not be treated as a critical error, as it doesn't affect the success of the core function (fetching data from the server).
                     logging.warning(f"Failed to cache historical data: {e}")
             return df
         else:
