@@ -1,2 +1,3 @@
 *.mq5 linguist-language=MQL5
 *.mqh linguist-language=MQL5
+tools/*.py linguist-vendored
